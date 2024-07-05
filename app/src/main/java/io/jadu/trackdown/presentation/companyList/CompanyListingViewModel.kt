@@ -1,5 +1,6 @@
 package io.jadu.trackdown.presentation.companyList
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -48,9 +49,11 @@ class CompanyListingViewModel @Inject constructor(
                 .collect { result ->
                     when(result) {
                         is Resource.Loading -> {
+                            Log.d("CompanyListingViewModel", "Loading: ${result.isLoading}")
                             state = state.copy(isLoading = result.isLoading)
                         }
                         is Resource.Success -> {
+                            Log.d("CompanyListingViewModel", "Success: ${result.data}")
                             result.data?.let { listings ->
                                 state = state.copy(
                                     companies = listings
@@ -58,7 +61,7 @@ class CompanyListingViewModel @Inject constructor(
                             }
                         }
                         is Resource.Error -> {
-
+                            Log.d("CompanyListingViewModel", "Error: ${result.message}")
                         }
                     }
                 }

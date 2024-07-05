@@ -4,15 +4,20 @@ import coil.network.HttpException
 import com.opencsv.CSVReader
 import io.jadu.trackdown.data.csv.CSVParser
 import io.jadu.trackdown.data.csv.CompanyListingParser
+import io.jadu.trackdown.data.csv.IntraDayInfoParser
 import io.jadu.trackdown.data.local.Database
+import io.jadu.trackdown.data.mappers.toCompanyInfo
 import io.jadu.trackdown.data.mappers.toCompanyListing
 import io.jadu.trackdown.data.mappers.toCompanyListingModel
 import io.jadu.trackdown.data.remote.dto.ApiService
+import io.jadu.trackdown.domain.model.CompanyInfo
 import io.jadu.trackdown.domain.model.CompanyListing
+import io.jadu.trackdown.domain.model.IntraDayInfo
 import io.jadu.trackdown.domain.repository.CompanyRepository
 import io.jadu.trackdown.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import okhttp3.internal.connection.Exchange
 import okio.IOException
 import java.io.InputStreamReader
 import javax.inject.Inject
@@ -22,7 +27,8 @@ import javax.inject.Singleton
 class CompanyRepositoryImpl @Inject constructor(
     val api: ApiService,
     val db: Database,
-    val companyListingParser: CSVParser<CompanyListing>
+    val companyListingParser: CSVParser<CompanyListing>,
+    private val intraDayInfoParser: CSVParser<IntraDayInfo>
 ):CompanyRepository {
 
     private  val dao = db.companyDao()
@@ -70,4 +76,30 @@ class CompanyRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getIntraDayInfo(symbol: String): Resource<List<IntraDayInfo>> {
+        return try {
+            val response = api.getIntradayInfo(symbol)
+            val results = intraDayInfoParser.parse(response.byteStream())
+            Resource.Success(data = results)
+        }catch (e:IOException){
+            e.printStackTrace()
+            Resource.Error(message = "Network Failure")
+        } catch (e: HttpException){
+            e.printStackTrace()
+            Resource.Error(message = "Network Failure")
+        }
+    }
+
+    override suspend fun getCompanyInfo(symbol: String): Resource<CompanyInfo> {
+        return try {
+            val result = api.getCompanyInfo(symbol)
+            Resource.Success(result.toCompanyInfo())
+        }catch (e:IOException){
+            e.printStackTrace()
+            Resource.Error(message = "Network Failure")
+        } catch (e: HttpException){
+            e.printStackTrace()
+            Resource.Error(message = "Network Failure")
+        }
+    }
 }

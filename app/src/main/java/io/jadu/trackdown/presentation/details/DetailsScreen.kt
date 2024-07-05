@@ -1,21 +1,27 @@
-package io.jadu.trackdown.presentation
+package io.jadu.trackdown.presentation.details
 
 import TimeSeriesResponse
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,11 +31,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -38,10 +46,97 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import io.jadu.trackdown.BuildConfig
+import io.jadu.trackdown.presentation.companyList.StockModelClass
 import kotlinx.serialization.json.Json
 
 @Composable
-fun DetailsScreen() {
+fun DetailsScreen(
+    symbol: String,
+    viewModel: StockDetailsViewModel = hiltViewModel()
+) {
+    val state = viewModel.state
+    if(state.error == null){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+                state.company?.let { data ->
+                    Text(
+                        text = data.name,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = data.symbol,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 14.sp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Industry: ${data.industry}",
+                        fontSize = 14.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Country: ${data.country}",
+                        fontSize = 14.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = data.description,
+                        fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            if(state.stockInfos.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Market Summary")
+                Spacer(modifier = Modifier.height(32.dp))
+                Log.d("DetailsScreen", "Stock Infos: ${state.stockInfos}")
+                /*StockChart(
+                    infos = state.stockInfos,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .align(CenterHorizontally)
+                )*/
+            }
+        }
+
+    }
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if(state.isLoading) {
+            CircularProgressIndicator()
+        } else if(state.error != null) {
+            Text(
+                text = state.error,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+    }
+
     val context = LocalContext.current
     val stockApiKey = BuildConfig.STOCK_API_KEY
     Log.d("DetailsScreen", "Stock API Key: $stockApiKey")
@@ -219,8 +314,3 @@ fun LineGraph(
 }
 
 
-@Composable
-@Preview
-fun DetailsScreenPreview() {
-    DetailsScreen()
-}

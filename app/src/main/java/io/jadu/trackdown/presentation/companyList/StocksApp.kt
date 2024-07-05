@@ -1,4 +1,4 @@
-package io.jadu.trackdown.presentation
+package io.jadu.trackdown.presentation.companyList
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -15,9 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
@@ -37,62 +34,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import dagger.hilt.android.AndroidEntryPoint
 import io.jadu.trackdown.domain.model.CompanyListing
-import io.jadu.trackdown.presentation.companyList.CompanyListingEvents
-import io.jadu.trackdown.presentation.companyList.CompanyListingState
-import io.jadu.trackdown.presentation.companyList.CompanyListingViewModel
+import io.jadu.trackdown.presentation.navigation.Screen
 
 @Composable
 fun StocksApp(
     modifier: Modifier = Modifier,
+    navController: NavController,
     viewModel: CompanyListingViewModel = hiltViewModel()
 ) {
 
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = viewModel.state.isRefreshing)
     val state = viewModel.state
 
-    val stockList: List<StockModelClass> = listOf(
-        StockModelClass(
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9-uBexCbY-wzK-6K2z65xoP3e-aLoF1QL0Q&s",
-            "Alphabet Inc. - Class A Shares (GOOGL)",
-            "$139.72",
-            "+0.45"
-        ),
-        StockModelClass(
-            "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8ed3d547-94ff-48e1-9f20-8c14a7030a02_2000x2000.jpeg",
-            "Apple",
-            "$151.4",
-            "+0.88"
-        ),
-        StockModelClass(
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1024px-Microsoft_logo.svg.png",
-            "Microsoft",
-            "332.06",
-            "+0.41"
-        ),
-        StockModelClass(
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9-uBexCbY-wzK-6K2z65xoP3e-aLoF1QL0Q&s",
-            "Alphabet Inc. - Class A Shares (GOOGL)",
-            "$139.72",
-            "+0.45"
-        ),
-        StockModelClass(
-            "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8ed3d547-94ff-48e1-9f20-8c14a7030a02_2000x2000.jpeg",
-            "Apple",
-            "$151.4",
-            "+0.88"
-        ),
-        StockModelClass(
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1024px-Microsoft_logo.svg.png",
-            "Microsoft",
-            "332.06",
-            "+0.41"
-        ),
-    )
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -126,7 +85,9 @@ fun StocksApp(
                     StockCard(company = companyData, modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
-                        .clickable {}
+                        .clickable {
+                            navController.navigate(Screen.CompanyDetail.withArgs(companyData.symbol))
+                        }
                     )
                     /*CompanyOverAllStocksCard(company = companyData,modifier = Modifier
                         .fillMaxWidth()
