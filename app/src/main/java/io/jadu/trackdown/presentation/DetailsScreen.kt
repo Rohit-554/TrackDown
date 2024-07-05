@@ -3,7 +3,6 @@ package io.jadu.trackdown.presentation
 import TimeSeriesResponse
 import android.content.Context
 import android.util.Log
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -39,15 +37,18 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import io.jadu.trackdown.BuildConfig
 import kotlinx.serialization.json.Json
+
 @Composable
 fun DetailsScreen() {
     val context = LocalContext.current
-
+    val stockApiKey = BuildConfig.STOCK_API_KEY
+    Log.d("DetailsScreen", "Stock API Key: $stockApiKey")
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        CustomAppBar(title = "Details Screen")
+
         Column {
             StockItemCard(stock = StockModelClass("https://www.apple.com/ac/structured-data/images/knowledge_graph_logo.png?202109201039", "AAPLE INC", "$139", "$150.00"))
         }

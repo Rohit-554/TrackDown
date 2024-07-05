@@ -1,7 +1,13 @@
+import java.util.Properties
+
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     kotlin("plugin.serialization") version "2.0.0"
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
 }
 
 android {
@@ -18,6 +24,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { inputStream ->
+                properties.load(inputStream)
+            }
+        }
+        val stockApiKey = properties.getProperty("STOCK_API_KEY")
+        if (stockApiKey != null) {
+            buildConfigField("String", "STOCK_API_KEY", "\"$stockApiKey\"")
+        } else {
+            throw GradleException("STOCK_API_KEY not found in local.properties")
         }
     }
 
@@ -39,6 +59,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -71,6 +92,38 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+
     //mpAndroidChart
     implementation(libs.mpandroidchart)
+    implementation(libs.opencsv)
+    // Compose dependencies
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.activity.compose.v160alpha01)
+    implementation(libs.accompanist.swiperefresh)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.moshi)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+    // Room
+    implementation(libs.androidx.room.runtime)
+    kapt("androidx.room:room-compiler:2.6.1")
+
+    // Kotlin Extensions and Coroutines support for Room
+    implementation(libs.androidx.room.ktx)
+
+    //dagger
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+
+    //opencsv
+    implementation (libs.opencsv)
+
+    implementation(libs.androidx.hilt.navigation.compose)
+}
+
+kapt {
+    correctErrorTypes = true
 }
