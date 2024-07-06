@@ -24,7 +24,6 @@ fun Navigation() {
                 defaultValue = ""
             })
         ) { entry->
-            Log.d("Navigation", "symbol: ${entry.arguments?.getString("symbol")}")
             DetailsScreen(symbol = entry.arguments?.getString("symbol") ?: "")
         }
     }
