@@ -2,7 +2,9 @@ package io.jadu.trackdown.data.repository
 
 import android.util.Log
 import coil.network.HttpException
+import com.google.gson.Gson
 import com.opencsv.CSVReader
+import com.squareup.moshi.Moshi
 import io.jadu.trackdown.BuildConfig
 import io.jadu.trackdown.data.csv.CSVParser
 import io.jadu.trackdown.data.csv.CompanyListingParser
@@ -12,14 +14,20 @@ import io.jadu.trackdown.data.mappers.toCompanyInfo
 import io.jadu.trackdown.data.mappers.toCompanyListing
 import io.jadu.trackdown.data.mappers.toCompanyListingModel
 import io.jadu.trackdown.data.remote.dto.ApiService
+import io.jadu.trackdown.data.remote.dto.LogoApiService
+import io.jadu.trackdown.domain.model.AutoQueryModel
 import io.jadu.trackdown.domain.model.CompanyInfo
 import io.jadu.trackdown.domain.model.CompanyListing
 import io.jadu.trackdown.domain.model.DailyStockInfo
 import io.jadu.trackdown.domain.model.IntraDayInfo
+import io.jadu.trackdown.domain.model.LogoModel
+import io.jadu.trackdown.domain.model.LogoModelItem
 import io.jadu.trackdown.domain.repository.CompanyRepository
 import io.jadu.trackdown.util.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import okhttp3.internal.connection.Exchange
 import okio.IOException
 import java.io.InputStreamReader
@@ -29,6 +37,7 @@ import javax.inject.Singleton
 @Singleton
 class CompanyRepositoryImpl @Inject constructor(
     val api: ApiService,
+    val logoApiService: LogoApiService,
     val db: Database,
     val companyListingParser: CSVParser<CompanyListing>,
     private val intraDayInfoParser: CSVParser<IntraDayInfo>,
@@ -156,6 +165,40 @@ class CompanyRepositoryImpl @Inject constructor(
         } catch (e: HttpException) {
             e.printStackTrace()
             Resource.Error(message = "Network Failure")
+        }
+    }
+
+    override suspend fun getCompanyLogo(ticker: String): Resource<LogoModel> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = logoApiService.getCompanyLogo(ticker)
+                // Parse the response and convert it to your LogoModel if needed
+                val logoModel = Gson().fromJson(response.string(), LogoModel::class.java)
+                Log.d("CompanyRepositoryImpl", "Response: ${logoModel}")
+                Resource.Success(logoModel)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                Resource.Error(message = "Network Failure")
+            } catch (e: HttpException) {
+                Log.d("CompanyRepositoryImpl", "Error: ${e.message}")
+                e.printStackTrace()
+                Resource.Error(message = "Server Error")
+            } catch (e: Exception) {
+                Log.d("CompanyRepositoryImpl", "Error: ${e.message}")
+                e.printStackTrace()
+                Resource.Error(message = "Unknown Error")
+            }
+        }
+    }
+
+    override suspend fun searchCompany(keywords: String): Flow<Resource<AutoQueryModel>> {
+        return flow {
+            emit(Resource.Loading(true))
+            val response = api.searchCompany(keywords)
+            Log.d("CompanyRepositoryImpl", "Response: ${response.bestMatches}")
+            Log.d("CompanyRepositoryImpl", "Responsedx: ${keywords}")
+            emit(Resource.Success(data = response))
+            emit(Resource.Error(message = "Network Failure"))
         }
     }
 }

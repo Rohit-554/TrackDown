@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.jadu.trackdown.data.local.Database
 import io.jadu.trackdown.data.remote.dto.ApiService
+import io.jadu.trackdown.data.remote.dto.LogoApiService
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.create
@@ -26,6 +27,17 @@ object AppModule {
             .build()
             .create()
     }
+
+    @Provides
+    @Singleton
+    fun provideLogoApiService(): LogoApiService {
+        return Retrofit.Builder()
+            .baseUrl(ApiService.LOGO_BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
+            .create()
+    }
+
 
     @Provides
     @Singleton

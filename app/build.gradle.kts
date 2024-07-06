@@ -34,8 +34,10 @@ android {
             }
         }
         val stockApiKey = properties.getProperty("STOCK_API_KEY")
+        val logoApiKey = properties.getProperty("LOGO_API_KEY")
         if (stockApiKey != null) {
             buildConfigField("String", "STOCK_API_KEY", "\"$stockApiKey\"")
+            buildConfigField("String", "LOGO_API_KEY", "\"$logoApiKey\"")
         } else {
             throw GradleException("STOCK_API_KEY not found in local.properties")
         }
@@ -120,8 +122,10 @@ dependencies {
 
     //opencsv
     implementation (libs.opencsv)
+    implementation ("com.google.code.gson:gson:2.10.1")
 
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation ("com.airbnb.android:lottie-compose:6.4.0")
 }
 
 kapt {

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
@@ -48,12 +51,18 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import io.jadu.trackdown.R
+import io.jadu.trackdown.domain.model.DailyStockInfo
 import io.jadu.trackdown.domain.model.IntraDayInfo
 import io.jadu.trackdown.presentation.companyList.StockModelClass
 import io.jadu.trackdown.util.Helper.formatTo12HourTime
@@ -66,6 +75,7 @@ fun DetailsScreen(
     viewModel: StockDetailsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
+    val graphModeSelected = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -129,7 +139,7 @@ fun DetailsScreen(
                         }
                     }
 
-                    if (state.stockInfos.isNotEmpty()) {
+                    if (state.stockInfos.isNotEmpty() || state.dailyInfos.isNotEmpty()) {
                         item {
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(text = "Market Summary")
@@ -142,7 +152,7 @@ fun DetailsScreen(
                                 Box(modifier = Modifier
                                     .height(300.dp)
                                     .fillMaxWidth()) {
-                                    ShowGraph(state.stockInfos)
+                                    ShowGraph(state.stockInfos,state.dailyInfos,graphModeSelected)
                                 }
                                 Column(
                                     modifier = Modifier
@@ -150,13 +160,10 @@ fun DetailsScreen(
                                     verticalArrangement = Arrangement.Center,
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    TimePeriodSelector(viewModel)
+                                    TimePeriodSelector(viewModel,graphModeSelected)
                                 }
                                 /*loadJsonFromAssets(context = context, fileName = "stock.json")*/
                             }
-                        }
-                        item {
-
                         }
                     }
                 }
@@ -181,7 +188,7 @@ fun DetailsScreen(
 }
 
 @Composable
-fun TimePeriodSelector(viewModel: StockDetailsViewModel) {
+fun TimePeriodSelector(viewModel: StockDetailsViewModel, graphModeSelected: MutableState<Boolean>) {
     val timePeriods = listOf("1D", "1W", "1M", "3M", "6M", "1Y")
     var selectedPeriod by remember { mutableStateOf("1D") }
 
@@ -192,20 +199,33 @@ fun TimePeriodSelector(viewModel: StockDetailsViewModel) {
             .padding(horizontal = 4.dp, vertical = 4.dp)
     ) {
         timePeriods.forEach { period ->
+            val isEnabled = when (period) {
+                "1D", "1W", "1M" -> true
+                else -> false
+            }
+
             Text(
                 text = period,
                 modifier = Modifier
                     .padding(horizontal = 4.dp)
-                    .clickable {
-                        selectedPeriod = period
-                        viewModel.updateStockInfo(period)
+                    .clickable(enabled = isEnabled) {
+                        if (isEnabled) {
+                            selectedPeriod = period
+                            if (period != "1D") {
+                                graphModeSelected.value = true
+                                viewModel.updateStockInfo(period)
+                            } else {
+                                viewModel.getInfo()
+                                graphModeSelected.value = false
+                            }
+                        }
                     }
                     .background(
-                        if (selectedPeriod == period) Color(0xFFD35400) else Color.Transparent,
+                        if (selectedPeriod == period && isEnabled) Color(0xFFD35400) else Color.Gray,
                         shape = RoundedCornerShape(50)
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp),
-                color = if (selectedPeriod == period) Color.White else Color.White,
+                color = if (selectedPeriod == period && isEnabled) Color.White else Color.Black,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -213,11 +233,21 @@ fun TimePeriodSelector(viewModel: StockDetailsViewModel) {
     }
 }
 
+
 @Composable
-fun ShowGraph(stockInfos: List<IntraDayInfo>) {
-    if (stockInfos.isNotEmpty()) {
-        val dates = stockInfos.map { it.date.toString() } // Convert LocalDateTime to String
-        val closingPrices = stockInfos.map { it.close.toFloat() }
+fun ShowGraph(
+    stockInfos: List<IntraDayInfo>,
+    dailyInfos: List<DailyStockInfo>,
+    graphModeSelected: MutableState<Boolean>
+) {
+    Log.d("ShowGraph", "DailyInfos: $dailyInfos")
+    val dates = stockInfos.map { it.date.toString() } // Convert LocalDateTime to String
+    val closingPrices = stockInfos.map { it.close.toFloat() }
+
+    val dailyDates = dailyInfos.map { it.date.toString() }
+    val dailyClosingPrices = dailyInfos.map { it.close.toFloat() }
+
+    if (dates.isNotEmpty() && closingPrices.isNotEmpty() && !graphModeSelected.value) {
         val dataLabel = "Stock Data"
         LineGraph(
             xData = dates,
@@ -225,14 +255,36 @@ fun ShowGraph(stockInfos: List<IntraDayInfo>) {
             dataLabel = dataLabel
         )
         try {
-            Log.d("ParseJson", "Parsed stockInfos: $stockInfos")
+            Log.d("ParseJson", "Parsed data: dates = $dates, closingPrices = $closingPrices")
         } catch (e: Exception) {
-            Log.e("ParseJson", "Error logging stockInfos", e)
+            Log.e("ParseJson", "Error logging data", e)
         }
     } else {
-        Log.e("ParseJson", "Empty stockInfos list")
+        LineGraph(
+            xData = dailyDates,
+            yData = dailyClosingPrices,
+            dataLabel = "Daily Stock Data"
+        )
+        /*if(dailyDates.isNotEmpty() && dailyClosingPrices.isNotEmpty()){
+
+        }else{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .size(10.dp)
+                    .wrapContentSize(Alignment.Center),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            }
+        }*/
+
     }
 }
+
 
 @Composable
 fun LineGraph(
@@ -248,52 +300,70 @@ fun LineGraph(
     legendOffset: Float = 20f,
     pointRadius: Float = 1f // New parameter for point radius
 ) {
-    val (sortedXData, sortedYData) = sortDataByDateTime(xData, yData)
-    val formattedXData = formatTo12HourTime(sortedXData)
-
-    AndroidView(
-        modifier = modifier.fillMaxSize(),
-        factory = { context ->
-            val chart = LineChart(context)
-            val entries: List<Entry> = yData.indices.map { Entry(it.toFloat(), yData[it]) }
-            val dataSet = LineDataSet(entries, dataLabel)
-            dataSet.valueTextColor = axisTextColor.toArgb()
-            dataSet.circleRadius = pointRadius // Set the radius for the points
-            chart.data = LineData(dataSet)
-            chart.setDrawBorders(true)
-            //remove the grid
-            chart.axisLeft.setDrawGridLines(false)
-            chart.xAxis.setDrawGridLines(false)
-
-            // Enable touch gestures
-            chart.setTouchEnabled(true)
-            chart.isDragEnabled = true
-            chart.isScaleXEnabled = true
-            chart.isScaleYEnabled = false
-
-            chart.description.isEnabled = descriptionEnabled
-            chart.legend.isEnabled = legendEnabled
-            chart.legend.textColor = axisTextColor.toArgb()
-
-            chart.axisLeft.textColor = axisTextColor.toArgb()
-            chart.axisRight.isEnabled = yAxisRightEnabled
-            chart.xAxis.textColor = axisTextColor.toArgb()
-            chart.xAxis.position = xAxisPosition
-
-            // Set custom labels for x-axis
-            chart.xAxis.valueFormatter = IndexAxisValueFormatter(formattedXData)
-            chart.xAxis.labelRotationAngle = 0f
-            chart.xAxis.setCenterAxisLabels(false)
-            chart.xAxis.granularity = 1f
-
-            // for setting extra offset to the legend title
-            chart.setExtraOffsets(0f, 0f, 0f, legendOffset)
-            // Refresh and return the chart
-            chart.invalidate()
-            chart
+    if (xData.isEmpty() || yData.isEmpty()) {
+        // Show a circular progress indicator or any placeholder when data is empty
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center),
+            contentAlignment = Alignment.Center
+        ) {
+            val rawComposition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.loadinggraph))
+            val progress by animateLottieCompositionAsState(composition = rawComposition)
+            LottieAnimation(
+                composition = rawComposition,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds,
+            )
         }
-    )
+    } else {
+        val (sortedXData, sortedYData) = sortDataByDateTime(xData, yData)
+        val formattedXData = formatTo12HourTime(sortedXData)
+
+        AndroidView(
+            modifier = modifier.fillMaxSize(),
+            factory = { context ->
+                val chart = LineChart(context)
+                val entries: List<Entry> = yData.indices.map { Entry(it.toFloat(), yData[it]) }
+                val dataSet = LineDataSet(entries, dataLabel)
+                dataSet.valueTextColor = axisTextColor.toArgb()
+                dataSet.circleRadius = pointRadius // Set the radius for the points
+                chart.data = LineData(dataSet)
+                chart.setDrawBorders(true)
+                chart.axisLeft.setDrawGridLines(false)
+                chart.xAxis.setDrawGridLines(false)
+
+                // Enable touch gestures
+                chart.setTouchEnabled(true)
+                chart.isDragEnabled = true
+                chart.isScaleXEnabled = true
+                chart.isScaleYEnabled = false
+
+                chart.description.isEnabled = descriptionEnabled
+                chart.legend.isEnabled = legendEnabled
+                chart.legend.textColor = axisTextColor.toArgb()
+
+                chart.axisLeft.textColor = axisTextColor.toArgb()
+                chart.axisRight.isEnabled = yAxisRightEnabled
+                chart.xAxis.textColor = axisTextColor.toArgb()
+                chart.xAxis.position = xAxisPosition
+
+                // Set custom labels for x-axis
+                chart.xAxis.valueFormatter = IndexAxisValueFormatter(formattedXData)
+                chart.xAxis.labelRotationAngle = 0f
+                chart.xAxis.setCenterAxisLabels(false)
+                chart.xAxis.granularity = 1f
+
+                // Set extra offset to the legend title
+                chart.setExtraOffsets(0f, 0f, 0f, legendOffset)
+                chart.invalidate()
+                chart
+            }
+        )
+    }
 }
+
+
 
 
 @Composable

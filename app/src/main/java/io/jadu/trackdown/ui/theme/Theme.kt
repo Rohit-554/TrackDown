@@ -1,6 +1,5 @@
 package io.jadu.trackdown.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -13,29 +12,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = androidx.compose.ui.graphics.Color.Green,
-    background = DarkBlue,
-    onPrimary = androidx.compose.ui.graphics.Color.DarkGray,
-    onBackground = TextWhite,
+    primary = TrendyPrimary,
+    secondary = TrendySecondary,
+    background = TrendyBackgroundDark,
+    surface = TrendySurfaceDark,
+    onPrimary = TrendyOnPrimary,
+    onSecondary = TrendyOnSecondary,
+    onBackground = TrendyOnBackgroundDark,
+    onSurface = TrendyOnSurfaceDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-    background = Color(0xFFF8F8F8),
-    surface = Color(0xFFFFFBFE),
-   /* onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,*/
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
+    primary = TrendyPrimary,
+    secondary = TrendySecondary,
+    background = TrendyBackgroundLight,
+    surface = TrendySurfaceLight,
+    onPrimary = TrendyOnPrimary,
+    onSecondary = TrendyOnSecondary,
+    onBackground = TrendyOnBackgroundLight,
+    onSurface = TrendyOnSurfaceLight
 )
 
 @Composable
 fun TrackDownTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -49,9 +49,16 @@ fun TrackDownTheme(
         else -> LightColorScheme
     }
 
+    // Set text colors based on the theme
+    val typography = Typography.copy(
+        bodyLarge = Typography.bodyLarge.copy(color = colorScheme.onBackground),
+        titleLarge = Typography.titleLarge.copy(color = colorScheme.onBackground),
+        labelSmall = Typography.labelSmall.copy(color = colorScheme.onBackground)
+    )
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = typography,
         content = content
     )
 }

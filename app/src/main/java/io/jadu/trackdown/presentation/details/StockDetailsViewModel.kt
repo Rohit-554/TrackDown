@@ -25,6 +25,10 @@ class StockDetailsViewModel @Inject constructor(
     private var currentSymbol: String? = null
 
     init {
+        getInfo()
+    }
+
+    fun getInfo(){
         viewModelScope.launch {
             val symbol = savedStateHandle.get<String>("symbol") ?: return@launch
             currentSymbol = symbol
@@ -32,6 +36,7 @@ class StockDetailsViewModel @Inject constructor(
             state = state.copy(isLoading = true)
             val companyInfoResult = async { repository.getCompanyInfo(symbol) }
             val intraDayInfoResult = async { repository.getIntraDayInfo(symbol) }
+
             when (val result = companyInfoResult.await()) {
                 is Resource.Success -> {
                     state = state.copy(
@@ -75,7 +80,6 @@ class StockDetailsViewModel @Inject constructor(
             val symbol = currentSymbol ?: return@launch
             state = state.copy(isLoading = true)
             val result = when (timePeriod) {
-                "1D" -> repository.getIntraDayInfo(symbol)
                 "1W" -> repository.getWeeklyInfo(symbol)
                 "1M" -> repository.getMonthlyInfo(symbol)
                 "3M" -> repository.getMonthlyInfo(symbol) // Replace with actual method if exists
@@ -84,13 +88,15 @@ class StockDetailsViewModel @Inject constructor(
                 else -> return@launch
             }
 
-            /*when (result) {
+            when (result) {
                 is Resource.Success -> {
-                    state = state.copy(
-                        stockInfos = result.data ?: emptyList(),
-                        isLoading = false,
-                        error = null
-                    )
+                    state = result.data?.let {
+                        state.copy(
+                            dailyInfos = it,
+                            isLoading = false,
+                            error = null
+                        )
+                    }!!
                 }
                 is Resource.Error -> {
                     state = state.copy(
@@ -100,7 +106,7 @@ class StockDetailsViewModel @Inject constructor(
                     )
                 }
                 else -> Unit
-            }*/
+            }
         }
     }
 }
