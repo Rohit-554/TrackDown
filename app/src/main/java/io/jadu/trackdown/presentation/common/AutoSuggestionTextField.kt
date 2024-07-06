@@ -1,4 +1,4 @@
-package io.jadu.trackdown.presentation.companyList
+package io.jadu.trackdown.presentation.common
 
 import androidx.compose.runtime.Composable
 import androidx.compose.animation.AnimatedVisibility

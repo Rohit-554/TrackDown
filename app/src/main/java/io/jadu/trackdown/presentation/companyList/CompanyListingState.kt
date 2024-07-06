@@ -8,5 +8,6 @@ data class CompanyListingState(
     val searchQuerySuggestions : AutoQueryModel = AutoQueryModel(emptyList()),
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val logoUrl: List<String?> = emptyList()
 )

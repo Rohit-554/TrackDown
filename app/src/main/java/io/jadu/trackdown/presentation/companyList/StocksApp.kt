@@ -1,6 +1,8 @@
 package io.jadu.trackdown.presentation.companyList
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +50,8 @@ import coil.compose.AsyncImage
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import io.jadu.trackdown.domain.model.CompanyListing
+import io.jadu.trackdown.presentation.common.AutoComplete
+import io.jadu.trackdown.presentation.common.shimmerBrush
 import io.jadu.trackdown.presentation.navigation.Screen
 
 @Composable
@@ -57,6 +63,20 @@ fun StocksApp(
     val coroutineScope = rememberCoroutineScope()
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = viewModel.state.isRefreshing)
     val state = viewModel.state
+    val state2 = viewModel.state2
+    val imageList = remember { mutableStateOf(emptyList<String>())}
+    LaunchedEffect(Unit) {
+        viewModel.logoState.collect { logo ->
+            val currentList = imageList.value.toMutableList()
+            if (logo != null && logo.image.isNotEmpty()) {
+                currentList.add(logo.image)
+            }
+            imageList.value = currentList.toList()
+            Log.d("StocksAppx", "Companies: ${imageList.value}")
+        }
+    }
+    Log.d("StocksAppxv", "Companies: ${state.logoUrl}")
+
     var isDropdownMenuExpanded by remember { mutableStateOf(false) }
 
     Scaffold { padding ->
@@ -82,11 +102,16 @@ fun StocksApp(
             ) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2), // Set the number of columns
-                    modifier = Modifier.fillMaxSize().padding(start = 8.dp, end = 8.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 8.dp, end = 8.dp)
                 ) {
+
                     items(state.companies.size) { companyData ->
                         StockCard(
                             company = state.companies[companyData],
+                            state = imageList,
+                            companyData = companyData,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
@@ -107,8 +132,6 @@ fun StocksApp(
 
 
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomAppBar(title: String = "Stock App", state: CompanyListingState) {
@@ -120,9 +143,12 @@ fun CustomAppBar(title: String = "Stock App", state: CompanyListingState) {
 fun StockCard(
     company: CompanyListing,
     modifier: Modifier,
-    viewModel: CompanyListingViewModel
+    viewModel: CompanyListingViewModel,
+    state: MutableState<List<String>>,
+    companyData: Int
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val showShimmer = remember { mutableStateOf(true) }
+    Log.d("StockCardstate", "Company: ${company.logoUrl}")
     Card(
         modifier = modifier,
         colors = CardColors(
@@ -140,17 +166,34 @@ fun StockCard(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                AsyncImage(
-                    model = {
-                    },
-                    contentDescription = "Company Logo",
-                    modifier = Modifier
-                        .height(48.dp)
-                        .width(48.dp)
-                        .clip(CircleShape)
-                        .border(0.5.dp, Color.Gray.copy(alpha = 0.2f), CircleShape),
-                    contentScale = ContentScale.Fit
-                )
+                if (state.value.isNotEmpty() && state.value.size > companyData) {
+                    AsyncImage(
+                        model = state.value[companyData],
+                        contentDescription = "Company Logo",
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(48.dp)
+                            .clip(CircleShape)
+                            .border(0.5.dp, Color.Gray.copy(alpha = 0.2f), CircleShape)
+                            .background(shimmerBrush(targetValue = 1300f, showShimmer = showShimmer.value)),
+                        onSuccess = { showShimmer.value = false },
+                        contentScale = ContentScale.Fit
+                    )
+                }else{
+                    AsyncImage(
+                        model = "",
+                        contentDescription = "Company Logo",
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(48.dp)
+                            .clip(CircleShape)
+                            .border(0.5.dp, Color.Gray.copy(alpha = 0.2f), CircleShape)
+                            .background(shimmerBrush(targetValue = 1300f, showShimmer = showShimmer.value))
+                        ,
+                        onSuccess = { showShimmer.value = false },
+                        contentScale = ContentScale.Fit
+                    )
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = company.name,
@@ -161,7 +204,6 @@ fun StockCard(
                 Text(text = company.symbol, color = Color.Gray)
                 Text(
                     text = company.exchange,
-                    /*color = if (stock.stockChange.startsWith("+")) Color.Green.copy(alpha = 0.5f) else Color.Red*/
                 )
             }
         }

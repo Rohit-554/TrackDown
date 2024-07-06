@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.jadu.trackdown.domain.model.CompanyListing
 import io.jadu.trackdown.domain.model.LogoModel
 import io.jadu.trackdown.domain.model.LogoModelItem
 import io.jadu.trackdown.domain.repository.CompanyRepository
@@ -15,16 +18,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.log
 
 @HiltViewModel
 class CompanyListingViewModel @Inject constructor(
     private val repository: CompanyRepository
 ) : ViewModel() {
     var state by mutableStateOf(CompanyListingState())
-    var logoState by mutableStateOf<LogoModelItem?>(null)
+    var state2 by mutableStateOf(CompanyListingState())
+    /*var logoState by mutableStateOf<LogoModelItem?>(null)*/
+    private var _logoState:MutableStateFlow<LogoModelItem?> = MutableStateFlow(null)
+    val logoState: StateFlow<LogoModelItem?> = _logoState
+
+
     private var searchJob: Job? = null
 
     init {
@@ -73,6 +85,8 @@ class CompanyListingViewModel @Inject constructor(
                                 state = state.copy(
                                     companies = listings
                                 )
+                                fetchCompanyLogos(listings)
+
                             }
                         }
 
@@ -98,6 +112,7 @@ class CompanyListingViewModel @Inject constructor(
                         is Resource.Success -> {
                             Log.d("CompanyListingViewModel", "Successd: ${result.data}")
                             result.data?.let { listings ->
+
                                 state = state.copy(
                                     searchQuerySuggestions = listings
                                 )
@@ -112,6 +127,20 @@ class CompanyListingViewModel @Inject constructor(
         }
 
     }
+    private fun fetchCompanyLogos(listings: List<CompanyListing>) {
+        Log.d("CompanyListingViewModel", "Listings: ${listings}")
+        viewModelScope.launch {
+            listings.forEach {
+                val logo = async { getCompanyLogo(it.symbol) }
+                val logoResult = logo.await()
+                if (logoResult?.isNotEmpty() == true) {
+                    Log.d("CompanyListingViewModel", "Logo: ${logoResult[0].image}")
+                    _logoState.value = logoResult[0]
+                }
+            }
+        }
+    }
+
 
     suspend fun getCompanyLogo(ticker: String): LogoModel? {
         return viewModelScope.async {
