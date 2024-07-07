@@ -1,5 +1,5 @@
 ## Trackdown
-An application built over kotlin to which lets you explore various stocks, etfs etc.
+An application built using Kotlin and Jetpack Compose that allows users to explore various stocks, ETFs, and more
 
 ![App logo](https://github.com/Rohit-554/TrackDown/assets/48874687/27027894-53b3-4b62-b26d-da65579c965d)
 
