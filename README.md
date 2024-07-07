@@ -72,7 +72,7 @@ LOGO_API_KEY= ...
 - **Dependency Injection:** Employed for efficient management of app dependencies.
 - **MVVM (Model-View-ViewModel):** Architecture pattern for separating UI from business logic.
 
-
+Thankyou 😊
 
 
 
