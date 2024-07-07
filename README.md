@@ -25,7 +25,9 @@ This Android application provides users with real-time data and insights into st
 ## Demo
 https://github.com/Rohit-554/TrackDown/assets/48874687/689306da-d8f5-4b67-b4da-f2951f21e092
 
-https://github.com/Rohit-554/TrackDown/assets/48874687/31892580-c2e9-48ad-ba49-2a167cdd4e3b
+https://github.com/Rohit-554/TrackDown/assets/48874687/fa8dcd78-7f3b-460c-b177-8138dfffa25a
+
+
 
 ## Features
 
