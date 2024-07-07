@@ -1,6 +1,5 @@
 package io.jadu.trackdown.presentation.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,7 +10,7 @@ import io.jadu.trackdown.presentation.details.DetailsScreen
 import io.jadu.trackdown.presentation.companyList.StocksApp
 
 @Composable
-fun Navigation() {
+fun TrackDownApp() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.StockApp.route) {
         composable(route = Screen.StockApp.route) {

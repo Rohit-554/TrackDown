@@ -9,7 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
-import io.jadu.trackdown.presentation.navigation.Navigation
+import io.jadu.trackdown.presentation.navigation.TrackDownApp
 import io.jadu.trackdown.ui.theme.TrackDownTheme
 
 
@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TrackDownTheme {
-                Navigation()
+                TrackDownApp()
             }
         }
     }
