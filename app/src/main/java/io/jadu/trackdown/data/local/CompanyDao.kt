@@ -19,10 +19,11 @@ interface CompanyDao {
 
     @androidx.room.Query(
         """
-            SELECT * FROM CompanyListingModel
-                WHERE LOWER(name) LIKE '%' || LOWER(:query) || '%' OR 
-                UPPER(:query) == symbol
-        """
+    SELECT * FROM CompanyListingModel
+    WHERE LOWER(name) LIKE '%' || LOWER(:query) || '%'
+        OR UPPER(:query) == symbol
+        OR LOWER(symbol) LIKE '%' || LOWER(:query) || '%'
+    """
     )
     suspend fun searchCompanyListing(query: String): List<CompanyListingModel>
 

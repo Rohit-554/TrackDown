@@ -9,6 +9,8 @@ import io.jadu.trackdown.domain.model.IntraDayInfo
 import io.jadu.trackdown.domain.model.LogoModel
 import io.jadu.trackdown.util.Resource
 import kotlinx.coroutines.flow.Flow
+import okhttp3.Response
+import okhttp3.ResponseBody
 
 interface CompanyRepository {
     suspend fun getCompanyList(

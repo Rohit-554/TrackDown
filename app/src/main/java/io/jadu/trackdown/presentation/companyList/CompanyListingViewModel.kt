@@ -32,7 +32,6 @@ class CompanyListingViewModel @Inject constructor(
 ) : ViewModel() {
     var state by mutableStateOf(CompanyListingState())
     var state2 by mutableStateOf(CompanyListingState())
-    /*var logoState by mutableStateOf<LogoModelItem?>(null)*/
     private var _logoState:MutableStateFlow<LogoModelItem?> = MutableStateFlow(null)
     val logoState: StateFlow<LogoModelItem?> = _logoState
 
@@ -46,7 +45,6 @@ class CompanyListingViewModel @Inject constructor(
             val logo = async { repository.getCompanyLogo("IBM") }
             Log.d("CompanyListingViewModel", "Logo: ${logo.await().data}")
         }*/
-
     }
 
     fun onEvent(event: CompanyListingEvents) {
@@ -98,7 +96,7 @@ class CompanyListingViewModel @Inject constructor(
         }
     }
 
-    fun autoQuerySuggestion() {
+    private fun autoQuerySuggestion() {
         viewModelScope.launch {
             Log.d("CompanyListingViewModel", "Search Query: ${state.searchQuery}")
             repository.searchCompany("I")
@@ -142,7 +140,7 @@ class CompanyListingViewModel @Inject constructor(
     }
 
 
-    suspend fun getCompanyLogo(ticker: String): LogoModel? {
+    private suspend fun getCompanyLogo(ticker: String): LogoModel? {
         return viewModelScope.async {
             val logo = repository.getCompanyLogo(ticker)
             // Assuming repository.getCompanyLogo returns a LogoModelItem or similar

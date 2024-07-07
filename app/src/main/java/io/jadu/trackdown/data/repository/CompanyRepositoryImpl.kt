@@ -2,6 +2,7 @@ package io.jadu.trackdown.data.repository
 
 import android.util.Log
 import coil.network.HttpException
+import com.bumptech.glide.util.pool.FactoryPools.Resetter
 import com.google.gson.Gson
 import com.opencsv.CSVReader
 import com.squareup.moshi.Moshi
@@ -25,9 +26,12 @@ import io.jadu.trackdown.domain.model.LogoModelItem
 import io.jadu.trackdown.domain.repository.CompanyRepository
 import io.jadu.trackdown.util.Resource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
+import okhttp3.Response
+import okhttp3.ResponseBody
 import okhttp3.internal.connection.Exchange
 import okio.IOException
 import java.io.InputStreamReader
@@ -97,7 +101,7 @@ class CompanyRepositoryImpl @Inject constructor(
 
     override suspend fun getIntraDayInfo(symbol: String): Resource<List<IntraDayInfo>> {
         return try {
-            val response = api.getIntradayInfo(symbol)
+            val response = api.getIntraDayInfo(symbol)
             val results = intraDayInfoParser.parse(response.byteStream())
             Log.d("CompanyRepositoryImpl", "Response: ${results}")
             Resource.Success(data = results)

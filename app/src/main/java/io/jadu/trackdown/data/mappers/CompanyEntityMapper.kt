@@ -27,6 +27,15 @@ fun CompanyInfoDto.toCompanyInfo(): CompanyInfo {
         description = description ?: "",
         name = name ?: "",
         country = country ?: "",
-        industry = industry ?: ""
+        industry = industry ?: "",
+        sector = sector?: "",
+        marketCap = marketCap?: "",
+        peRatio = peRatio?: "",
+        beta = beta?: "",
+        dividendYield = dividendYield?: "",
+        profitMargin = profitMargin?: "",
+        fiftyTwoWeeksLow = fiftyTwoWeeksLow?: "",
+        fiftyTwoWeeksHigh = fiftyTwoWeeksHigh?: "",
+        fiftyDayMovingAverage = fiftyDayMovingAverage?: ""
     )
 }

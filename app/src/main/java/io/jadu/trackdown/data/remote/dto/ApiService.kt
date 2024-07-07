@@ -4,6 +4,7 @@ import android.util.Log
 import io.jadu.trackdown.BuildConfig
 import io.jadu.trackdown.domain.model.AutoQueryModel
 import io.jadu.trackdown.domain.model.BestMatch
+import okhttp3.Response
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -17,7 +18,7 @@ interface ApiService {
     ):ResponseBody
 
     @GET("query?function=TIME_SERIES_INTRADAY&interval=5min&datatype=csv")
-    suspend fun getIntradayInfo(
+    suspend fun getIntraDayInfo(
         @Query("symbol") symbol: String,
         @Query("apikey") apiKey: String = STOCK_API_KEY
     ): ResponseBody

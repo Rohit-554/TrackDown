@@ -10,9 +10,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.jadu.trackdown.domain.model.CompanyInfo
+import io.jadu.trackdown.domain.model.LogoModelItem
 import io.jadu.trackdown.domain.repository.CompanyRepository
 import io.jadu.trackdown.util.Resource
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +26,8 @@ class StockDetailsViewModel @Inject constructor(
 ) : ViewModel() {
     var state by mutableStateOf(CompanyInfoState())
     private var currentSymbol: String? = null
+    private var _logoState: MutableStateFlow<LogoModelItem?> = MutableStateFlow(null)
+    val logoState: StateFlow<LogoModelItem?> = _logoState
 
     init {
         getInfo()
@@ -72,9 +77,28 @@ class StockDetailsViewModel @Inject constructor(
                 }
                 else -> Unit
             }
+
         }
     }
 
+    fun getImage(symbol:String){
+        viewModelScope.launch {
+            val result = repository.getCompanyLogo(symbol)
+            when(result){
+                is Resource.Success -> {
+                    _logoState.value = result.data?.first()
+                }
+                is Resource.Error -> {
+                    // Handle error
+                    _logoState.value = null
+                }
+                // Handle other states if needed
+                is Resource.Loading -> {
+
+                }
+            }
+        }
+    }
     fun updateStockInfo(timePeriod: String) {
         viewModelScope.launch {
             val symbol = currentSymbol ?: return@launch

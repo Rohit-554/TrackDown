@@ -1,6 +1,7 @@
 package io.jadu.trackdown.data.csv
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.opencsv.CSVReader
 import io.jadu.trackdown.data.mappers.toIntraDayInfo
@@ -16,26 +17,44 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class IntraDayInfoParser @Inject constructor():CSVParser<IntraDayInfo> {
-    override suspend fun  parse(stream: InputStream): List<IntraDayInfo> {
+class IntraDayInfoParser @Inject constructor() : CSVParser<IntraDayInfo> {
+    override suspend fun parse(stream: InputStream): List<IntraDayInfo> {
         val csvReader = CSVReader(InputStreamReader(stream))
-        return withContext(Dispatchers.IO){
-            csvReader.readAll().drop(1)
-                .mapNotNull { line->
-                    val timestamp = line.getOrNull(0) ?: return@mapNotNull null
-                    val close = line.getOrNull(4) ?: return@mapNotNull null
-                    val dto = IntraDayInfoDto(timestamp,close.toDouble())
+        return withContext(Dispatchers.IO) {
+            val allLines = csvReader.readAll().drop(1)
+            val parsedData = allLines.mapNotNull { line ->
+                val timestamp = line.getOrNull(0) ?: run {
+                    Log.e("IntraDayInfoParser", "Missing timestamp in line: $line")
+                    return@mapNotNull null
+                }
+                val close = line.getOrNull(4) ?: run {
+                    Log.e("IntraDayInfoParser", "Missing close price in line: $line")
+                    return@mapNotNull null
+                }
+                try {
+                    val dto = IntraDayInfoDto(timestamp, close.toDouble())
                     dto.toIntraDayInfo()
+                } catch (e: Exception) {
+                    Log.e("IntraDayInfoParser", "Error parsing line: $line", e)
+                    null
                 }
-                .filter {
-                    it.date.dayOfMonth == LocalDateTime.now().minusDays(1).dayOfMonth
-                }
+            }
+
+            val maxDate = parsedData.maxByOrNull { it.date }?.date
+            Log.d("IntraDayInfoParser", "Max date found: $maxDate")
+
+            val filteredData = parsedData.filter {
+                it.date.toLocalDate() == maxDate?.toLocalDate()
+            }
                 .sortedBy {
                     it.date.hour
                 }
                 .also {
                     csvReader.close()
                 }
+            filteredData
         }
     }
 }
+
+

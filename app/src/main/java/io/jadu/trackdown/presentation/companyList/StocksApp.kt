@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.Disposable
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import io.jadu.trackdown.domain.model.CompanyListing
@@ -73,6 +75,11 @@ fun StocksApp(
             }
             imageList.value = currentList.toList()
             Log.d("StocksAppx", "Companies: ${imageList.value}")
+        }
+    }
+    DisposableEffect(state.searchQuery) {
+        onDispose {
+            state.searchQuery = ""
         }
     }
     Log.d("StocksAppxv", "Companies: ${state.logoUrl}")
@@ -148,7 +155,6 @@ fun StockCard(
     companyData: Int
 ) {
     val showShimmer = remember { mutableStateOf(true) }
-    Log.d("StockCardstate", "Company: ${company.logoUrl}")
     Card(
         modifier = modifier,
         colors = CardColors(
@@ -175,7 +181,12 @@ fun StockCard(
                             .width(48.dp)
                             .clip(CircleShape)
                             .border(0.5.dp, Color.Gray.copy(alpha = 0.2f), CircleShape)
-                            .background(shimmerBrush(targetValue = 1300f, showShimmer = showShimmer.value)),
+                            .background(
+                                shimmerBrush(
+                                    targetValue = 1300f,
+                                    showShimmer = showShimmer.value
+                                )
+                            ),
                         onSuccess = { showShimmer.value = false },
                         contentScale = ContentScale.Fit
                     )
@@ -188,7 +199,12 @@ fun StockCard(
                             .width(48.dp)
                             .clip(CircleShape)
                             .border(0.5.dp, Color.Gray.copy(alpha = 0.2f), CircleShape)
-                            .background(shimmerBrush(targetValue = 1300f, showShimmer = showShimmer.value))
+                            .background(
+                                shimmerBrush(
+                                    targetValue = 1300f,
+                                    showShimmer = showShimmer.value
+                                )
+                            )
                         ,
                         onSuccess = { showShimmer.value = false },
                         contentScale = ContentScale.Fit
