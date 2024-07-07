@@ -53,15 +53,22 @@ https://github.com/Rohit-554/TrackDown/assets/48874687/31892580-c2e9-48ad-ba49-2
 ## Getting Started
 
 To run the app:
+
 1. Clone the repository.
-2. Generate an API key from Alpha Vantage and replace it in the app and place it in ```local.properties``` like this ```STOCK_API_KEY=```.
-3. Build and run the app on an Android device or emulator.
+2. Generate an API key and replace it in the app. Place it in `local.properties` like this:
+```
+sdk.dir= ...
+STOCK_API_KEY= ...
+LOGO_API_KEY= ...
+```
+3. Apis can be generated from here [STOCK_API_key](https://www.alphavantage.co/support/#) and [LOGO_API_KEY](https://api-ninjas.com/profile)
+4. Build and run the app on an Android device or emulator.
 
 ## Tech Stack
 
-- **Kotlin:** Our primary programming language for Android app development.
+- **Kotlin:** For development
 - **Android Studio:** The integrated development environment (IDE) for Android app development.
-- **Compose:** The project is migrated to compose.
+- **Compose:** an open-source, Kotlin-based toolkit for building native Android user interfaces (UIs)
 - **Dependency Injection:** Employed for efficient management of app dependencies.
 - **MVVM (Model-View-ViewModel):** Architecture pattern for separating UI from business logic.
 
