@@ -1,13 +1,13 @@
-![stockapp](https://github.com/Rohit-554/TrackDown/assets/48874687/ce4e4844-846a-4d44-afbc-122d66a77f5b)# TrackDown
+#Trackdown
 
 A application built over kotlin to which lets you explore various stocks, etfs etc.
 
 ![App logo](https://github.com/Rohit-554/TrackDown/assets/48874687/27027894-53b3-4b62-b26d-da65579c965d)
 
 ## About the Project
-
 This Android application provides users with real-time data and insights into stocks and ETFs. It includes two main screens and utilizes the Alpha Vantage API for data fetching.
-![stockapp](https://github.com/Rohit-554/TrackDown/assets/48874687/0599ff91-9106-4fef-aeaa-c5d0520e55e8)
+
+![stockapp](https://github.com/Rohit-554/TrackDown/assets/48874687/ce4e4844-846a-4d44-afbc-122d66a77f5b)
 ## Demo
 https://github.com/Rohit-554/TrackDown/assets/48874687/689306da-d8f5-4b67-b4da-f2951f21e092
 
@@ -16,10 +16,6 @@ https://github.com/Rohit-554/TrackDown/assets/48874687/31892580-c2e9-48ad-ba49-2
 ### Explore Screen
 - Displays Top Gainers and Losers in separate tabs.
 - Each tab features a grid of cards with detailed stock/ETF information.
-
-
-
-
 
 
 <img src="https://github.com/Rohit-554/TrackDown/assets/48874687/47b3d7b5-4e0c-4fd8-afd0-a6d2948c168d" width="200" height="450">
