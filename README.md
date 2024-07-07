@@ -7,10 +7,7 @@ An application built using Kotlin and Jetpack Compose that allows users to explo
 This Android application provides users with real-time data and insights into stocks and ETFs. It includes two main screens and utilizes the Alpha Vantage API for data fetching.
 
 ![stockapp](https://github.com/Rohit-554/TrackDown/assets/48874687/ce4e4844-846a-4d44-afbc-122d66a77f5b)
-## Demo
-https://github.com/Rohit-554/TrackDown/assets/48874687/689306da-d8f5-4b67-b4da-f2951f21e092
 
-https://github.com/Rohit-554/TrackDown/assets/48874687/31892580-c2e9-48ad-ba49-2a167cdd4e3b
 
 ### Explore Screen
 - Displays Top Gainers and Losers in separate tabs.
@@ -24,6 +21,11 @@ https://github.com/Rohit-554/TrackDown/assets/48874687/31892580-c2e9-48ad-ba49-2
   <br>
 <img src="https://github.com/Rohit-554/TrackDown/assets/48874687/5cc3366e-b574-4a32-b533-1d763e4b6c98" width="200" height="450">
 <img src="https://github.com/Rohit-554/TrackDown/assets/48874687/58839dca-5471-4f57-a1f9-4c847aeed6a0" width="200" height="450">
+
+## Demo
+https://github.com/Rohit-554/TrackDown/assets/48874687/689306da-d8f5-4b67-b4da-f2951f21e092
+
+https://github.com/Rohit-554/TrackDown/assets/48874687/31892580-c2e9-48ad-ba49-2a167cdd4e3b
 
 ## Features
 
